@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ls-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 9600
+    name: http
+  - port: 5044
+    name: beats
+  - port: 514
+    name: syslog-udp
+  - port: 601
+    name: syslog-conn
+  - port: 6514
+    name: syslog-tls-tcp
+  - port: 9999
+    name: raw-tcp
+  selector:
+    app: logstash

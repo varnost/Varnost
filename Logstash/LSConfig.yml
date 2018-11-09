@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  tcp.conf: |
+    input {
+      tcp {
+        port => 9999
+      }
+    }
+    output {
+      elasticsearch { hosts => ["es-nodeport:9200"] }
+    }
