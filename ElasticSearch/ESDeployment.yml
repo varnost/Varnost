@@ -93,7 +93,7 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: es-ssd
+      storageClassName: ssd
       resources:
         requests:
           storage: 5Gi

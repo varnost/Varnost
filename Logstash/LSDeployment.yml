@@ -78,7 +78,7 @@ spec:
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: ls-ssd
+      storageClassName: ssd
       resources:
         requests:
           storage: 5Gi
