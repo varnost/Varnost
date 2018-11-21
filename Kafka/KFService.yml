@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kf-service
+  labels:
+    app: kafka
+spec:
+  ports:
+  - port: 9093
+    name: server
+  clusterIP: None
+  selector:
+    app: kafka
