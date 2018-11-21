@@ -8,6 +8,9 @@ data:
       tcp {
         port => 9999
       }
+      beats {
+        port => 5044
+      }
     }
     output {
       elasticsearch { hosts => ["es-nodeport:9200"] }
