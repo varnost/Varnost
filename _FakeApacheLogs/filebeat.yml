@@ -1,0 +1,9 @@
+#filebeat.inputs:
+#- type: log
+#  enabled: true
+#  paths:
+#    - /var/log/apache/*
+filebeat.inputs:
+- type: stdin
+output.logstash:
+  hosts: ["PLACEHOLDER_STRING_HOST"]
