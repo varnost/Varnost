@@ -37,13 +37,13 @@ spec:
         imagePullPolicy: Always
         image: gcr.io/google_samples/k8skafka:v1
         ports:
-        - containerPort: 9093
+        - containerPort: 9092
           name: server
         command:
         - sh
         - -c
         - "exec kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
-          --override listeners=PLAINTEXT://:9093 \
+          --override listeners=PLAINTEXT://:9092 \
           --override zookeeper.connect=zookeeper-0.zk-service.default.svc.cluster.local:2181,zookeeper-1.zk-service.default.svc.cluster.local:2181,zookeeper-2.zk-service.default.svc.cluster.local:2181 \
           --override log.dir=/var/lib/kafka \
           --override auto.create.topics.enable=true \
@@ -142,7 +142,7 @@ spec:
            command:
             - sh
             - -c
-            - "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9093"
+            - "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server=localhost:9092"
       securityContext:
         runAsUser: 1000
         fsGroup: 1000
