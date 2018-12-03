@@ -29,6 +29,7 @@ spec:
       containers:
       - name: logstash
         image: docker.elastic.co/logstash/logstash-oss:6.4.2
+        args: ["--config.reload.automatic"]
         ports:
         - containerPort: 9600
           name: http
@@ -65,13 +66,14 @@ spec:
         volumeMounts:
         - name: pipeline
           mountPath: /usr/share/logstash/pipeline
+          subPath: logstash
           readOnly: true
         - name: data
           mountPath: /usr/share/logstash/data
       volumes:
       - name: pipeline
-        configMap:
-          name: logstash-config
+        persistentVolumeClaim:
+          claimName: nfs
   volumeClaimTemplates:
   - metadata:
       name: data
