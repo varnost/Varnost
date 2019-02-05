@@ -28,7 +28,7 @@ spec:
           mountPath: /usr/share/logstash/data
       containers:
       - name: logstash
-        image: docker.elastic.co/logstash/logstash-oss:6.4.2
+        image: varnost/logstash:6.5.4
         args: ["--config.reload.automatic"]
         ports:
         - containerPort: 9600
