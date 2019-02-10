@@ -6,6 +6,7 @@ import (
     "log"
     "net/http"
     "github.com/Shopify/sarama"
+    "github.com/spf13/viper"
 )
 
 var (
@@ -16,6 +17,27 @@ var (
 	messageCountStart = kingpin.Flag("messageCountStart", "Message counter start from:").Int()
 )
 
+type KafkaConfiguration struct {
+	Brokerlist []string
+	Topic string
+	Partition int
+	offsetType int
+	messageCountStart int
+}
+
+type AlertConfiguration struct {
+	FatalEmail string
+	FatalSlackChannel string
+	WarnEmail string
+	WarnSlackChannel string
+	InfoEmail string
+	InfoSlackChannel string
+}
+
+type Configuration struct {
+    kafka KafkaConfiguration
+    alert AlertConfiguration
+}
 // Read config file passed as arg
 //  Config file contains default mailer per severity
 //    Also contains granular source => destination mapping if necessary
@@ -33,16 +55,15 @@ type Alert struct {
 var alerts []Alert
 
 // create a new item
-func CreateAlert(w http.ResponseWriter, r *http.Request) {
+func CreateAlert() {
     params := mux.Vars(r)
     var alert Alert
     _ = json.NewDecoder(r.Body).Decode(&alert)
     alert.ID = GenerateAlertHash(alert)
-    //alerts = append(alerts, alert)
-    //json.NewEncoder(w).Encode(alerts)
+
 }
 
-func GenerateAlertHash(alert *Alert)(string){
+func (a.Alert) GenerateAlertHash (string){
     return "foo" //todo
 }
 
@@ -50,18 +71,28 @@ func GenerateAlertHash(alert *Alert)(string){
 // Handler for slack
 // Handler for pagerduty
 
-// 
-// main function to boot up everything
+
 func main() {
+    viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	var configuration Configuration
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file, %s", err)
+	}
+	err := viper.Unmarshal(&Configuration)
+	if err != nil {
+		log.Fatalf("unable to decode into struct, %v", err)
+	}
+
     //router := mux.NewRouter()
 
     //router.HandleFunc("/alert", CreateAlert).Methods("POST")
 
     //log.Fatal(http.ListenAndServe(":8000", router))
-    kingpin.Parse()
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
-	brokers := *brokerList
+	brokers := *configuration.kafka.BrokerList
 	master, err := sarama.NewConsumer(brokers, config)
 	if err != nil {
 		panic(err)
