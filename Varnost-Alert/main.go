@@ -1,74 +1,98 @@
 package main
-package main
 
 import (
     "encoding/json"
     "github.com/gorilla/mux"
     "log"
     "net/http"
+    "github.com/Shopify/sarama"
 )
 
-// The person Type (more like an object)
-type Person struct {
-    ID        string   `json:"id,omitempty"`
-    Firstname string   `json:"firstname,omitempty"`
-    Lastname  string   `json:"lastname,omitempty"`
-    Address   *Address `json:"address,omitempty"`
-}
-type Address struct {
-    City  string `json:"city,omitempty"`
-    State string `json:"state,omitempty"`
+var (
+	brokerList        = kingpin.Flag("brokerList", "List of brokers to connect").Default("localhost:9092").Strings()
+	topic             = kingpin.Flag("topic", "Topic name").Default("important").String()
+	partition         = kingpin.Flag("partition", "Partition number").Default("0").String()
+	offsetType        = kingpin.Flag("offsetType", "Offset Type (OffsetNewest | OffsetOldest)").Default("-1").Int()
+	messageCountStart = kingpin.Flag("messageCountStart", "Message counter start from:").Int()
+)
+
+// Read config file passed as arg
+//  Config file contains default mailer per severity
+//    Also contains granular source => destination mapping if necessary
+
+// Consume alerts off kafka
+// https://github.com/vsouza/go-kafka-example
+
+type Alert struct {
+    ID  string
+    Severity int
+    Source string
+    Detail string
 }
 
-var people []Person
-
-// Display all from the people var
-func GetPeople(w http.ResponseWriter, r *http.Request) {
-    json.NewEncoder(w).Encode(people)
-}
-
-// Display a single data
-func GetPerson(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    for _, item := range people {
-        if item.ID == params["id"] {
-            json.NewEncoder(w).Encode(item)
-            return
-        }
-    }
-    json.NewEncoder(w).Encode(&Person{})
-}
+var alerts []Alert
 
 // create a new item
-func CreatePerson(w http.ResponseWriter, r *http.Request) {
+func CreateAlert(w http.ResponseWriter, r *http.Request) {
     params := mux.Vars(r)
-    var person Person
-    _ = json.NewDecoder(r.Body).Decode(&person)
-    person.ID = params["id"]
-    people = append(people, person)
-    json.NewEncoder(w).Encode(people)
+    var alert Alert
+    _ = json.NewDecoder(r.Body).Decode(&alert)
+    alert.ID = GenerateAlertHash(alert)
+    //alerts = append(alerts, alert)
+    //json.NewEncoder(w).Encode(alerts)
 }
 
-// Delete an item
-func DeletePerson(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    for index, item := range people {
-        if item.ID == params["id"] {
-            people = append(people[:index], people[index+1:]...)
-            break
-        }
-        json.NewEncoder(w).Encode(people)
-    }
+func GenerateAlertHash(alert *Alert)(string){
+    return "foo" //todo
 }
 
+// Handler for email
+// Handler for slack
+// Handler for pagerduty
+
+// 
 // main function to boot up everything
 func main() {
-    router := mux.NewRouter()
-    people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
-    people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
-    router.HandleFunc("/people", GetPeople).Methods("GET")
-    router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
-    router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
-    router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
-    log.Fatal(http.ListenAndServe(":8000", router))
+    //router := mux.NewRouter()
+
+    //router.HandleFunc("/alert", CreateAlert).Methods("POST")
+
+    //log.Fatal(http.ListenAndServe(":8000", router))
+    kingpin.Parse()
+	config := sarama.NewConfig()
+	config.Consumer.Return.Errors = true
+	brokers := *brokerList
+	master, err := sarama.NewConsumer(brokers, config)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := master.Close(); err != nil {
+			panic(err)
+		}
+	}()
+	consumer, err := master.ConsumePartition(*topic, 0, sarama.OffsetOldest)
+	if err != nil {
+		panic(err)
+	}
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+	doneCh := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case err := <-consumer.Errors():
+				fmt.Println(err)
+			case msg := <-consumer.Messages():
+				*messageCountStart++
+				fmt.Println("Received messages", string(msg.Key), string(msg.Value))
+			case <-signals:
+				fmt.Println("Interrupt is detected")
+				doneCh <- struct{}{}
+			}
+		}
+	}()
+	<-doneCh
+fmt.Println("Processed", *messageCountStart, "messages")
+
 }
