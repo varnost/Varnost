@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: zookeeper
 spec:
-  serviceName: zk-service
+  serviceName: zk-headless-service
   replicas: 3
   selector:
     matchLabels:

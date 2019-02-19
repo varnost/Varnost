@@ -1,8 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: zk-service
+  name: zk-headless-service
 spec:
+  clusterIP: None
   ports:
   - port: 2181
     name: client
