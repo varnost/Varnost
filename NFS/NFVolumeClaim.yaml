@@ -1,11 +1,26 @@
+
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: PersistentVolume
 metadata:
-  name: nfs-pv
+  name: nfs
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: nf-service.default.svc.cluster.local
+    path: "/"
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs
 spec:
   accessModes:
-    - ReadWriteOnce
-  storageClassName: hdd
+    - ReadWriteMany
+  storageClassName: ""
   resources:
     requests:
-      storage: 1Gi
+      storage: 10Gi

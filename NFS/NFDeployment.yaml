@@ -1,21 +1,21 @@
-apiVersion: apps/v1beta1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: nfs-server
+  name: nf-server
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: nfs-server
+      app: nf-server
   template:
     metadata:
       labels:
-        app: nfs-server
+        app: nf-server
     spec:
       containers:
-      - name: nfs-server
+      - name: nf-server
         image: gcr.io/google_containers/volume-nfs:0.8
         ports:
           - name: nfs
@@ -28,8 +28,9 @@ spec:
           privileged: true
         volumeMounts:
           - mountPath: /exports
-            name: pvc
+            name: nfs-disk
       volumes:
-        - name: pvc
-          persistentVolumeClaim:
-            claimName: nfs-pv
+        - name: nfs-disk
+          gcePersistentDisk:
+            pdName: varnost-nfs-disk
+            fsType: ext4

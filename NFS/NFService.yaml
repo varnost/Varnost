@@ -1,5 +1,5 @@
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
   name: nf-service
 spec:
@@ -11,4 +11,4 @@ spec:
     - name: rpcbind
       port: 111
   selector:
-    app: nfs-server
+    app: nf-server
