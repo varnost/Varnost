@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: elasticsearch
 spec:
-  serviceName: es-service
+  serviceName: es-headless-service
   # NOTE: This is number of nodes that we want to run
   # you may update this
   replicas: 3
@@ -75,7 +75,7 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         - name: discovery.zen.ping.unicast.hosts
-          value: "elasticsearch-0.es-service.default.svc.cluster.local, elasticsearch-1.es-service.default.svc.cluster.local, elasticsearch-2.es-service.default.svc.cluster.local"
+          value: "elasticsearch-0.es-headless-service.default.svc.cluster.local, elasticsearch-1.es-headless-service.default.svc.cluster.local, elasticsearch-2.es-headless-service.default.svc.cluster.local"
         - name: ES_HEAP_SIZE
           value: 512m
         readinessProbe:
