@@ -1,9 +1,10 @@
+# Reference https://github.com/kubernetes/contrib/tree/master/statefulsets/kafka
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
   name: kafka
 spec:
-  serviceName: kf-service
+  serviceName: kf-headless-service
   replicas: 3
   template:
     metadata:
@@ -33,7 +34,7 @@ spec:
                  topologyKey: "kubernetes.io/hostname"
       terminationGracePeriodSeconds: 300
       containers:
-      - name: k8skafka
+      - name: kafka
         imagePullPolicy: Always
         image: gcr.io/google_samples/k8skafka:v1
         ports:
@@ -44,19 +45,19 @@ spec:
         - -c
         - "exec kafka-server-start.sh /opt/kafka/config/server.properties --override broker.id=${HOSTNAME##*-} \
           --override listeners=PLAINTEXT://:9092 \
-          --override zookeeper.connect=zookeeper-0.zk-service.default.svc.cluster.local:2181,zookeeper-1.zk-service.default.svc.cluster.local:2181,zookeeper-2.zk-service.default.svc.cluster.local:2181 \
+          --override zookeeper.connect=zookeeper-0.zk-headless-service.default.svc.cluster.local:2181,zookeeper-1.zk-headless-service.default.svc.cluster.local:2181,zookeeper-2.zk-headless-service.default.svc.cluster.local:2181 \
           --override log.dir=/var/lib/kafka \
           --override auto.create.topics.enable=true \
           --override auto.leader.rebalance.enable=true \
           --override background.threads=10 \
           --override compression.type=producer \
-          --override delete.topic.enable=false \
+          --override delete.topic.enable=true \
           --override leader.imbalance.check.interval.seconds=300 \
           --override leader.imbalance.per.broker.percentage=10 \
           --override log.flush.interval.messages=9223372036854775807 \
           --override log.flush.offset.checkpoint.interval.ms=60000 \
           --override log.flush.scheduler.interval.ms=9223372036854775807 \
-          --override log.retention.bytes=-1 \
+          --override log.retention.bytes=4831838208 \
           --override log.retention.hours=168 \
           --override log.roll.hours=168 \
           --override log.roll.jitter.hours=0 \
