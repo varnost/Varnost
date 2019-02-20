@@ -1,21 +1,21 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: nf-server
+  name: nfs
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: nf-server
+      app: nfs
   template:
     metadata:
       labels:
-        app: nf-server
+        app: nfs
     spec:
       containers:
-      - name: nf-server
+      - name: nfs
         image: gcr.io/google_containers/volume-nfs:0.8
         ports:
           - name: nfs
