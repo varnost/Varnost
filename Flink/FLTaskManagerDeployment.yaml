@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: flink-taskmanager
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: flink
@@ -15,7 +15,7 @@ spec:
         component: taskmanager
     spec:
       containers:
-      - name: taskmanager
+      - name: flink-taskmanager
         image: flink:1.7.1-scala_2.12
         args:
         - taskmanager
@@ -28,4 +28,4 @@ spec:
           name: query
         env:
         - name: JOB_MANAGER_RPC_ADDRESS
-          value: fl-nodeport
+          value: fl-service
