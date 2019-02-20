@@ -7,4 +7,4 @@ data:
     ---
     server.name: kibana
     server.host: "0"
-    elasticsearch.url: http://es-nodeport:9200
+    elasticsearch.url: http://es-service:9200
