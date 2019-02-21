@@ -61,7 +61,7 @@ spec:
         - name: queue.drain
           value: "true"
         - name: ES_HOST
-          value: "es-nodeport"
+          value: "es-service"
         - name: ES_PORT
           value: "9200"
         - name: KF_HOST
@@ -77,6 +77,14 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /usr/share/logstash/data
+        - name: pipeline
+          mountPath: /usr/share/logstash/pipeline
+          subPath: logstash/pipeline
+          readOnly: true
+      volumes:
+        - name: pipeline
+          persistentVolumeClaim:
+            claimName: nfs
   volumeClaimTemplates:
   - metadata:
       name: data
