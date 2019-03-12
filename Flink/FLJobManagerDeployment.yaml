@@ -5,17 +5,20 @@ kind: Deployment
 metadata:
   name: flink-jobmanager
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: flink
       component: jobmanager
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
         app: flink
         component: jobmanager
     spec:
+      securityContext:
+        fsGroup: 9999
       containers:
       - name: flink-jobmanager
         image: flink:1.7.1-scala_2.12
@@ -33,3 +36,20 @@ spec:
         env:
         - name: JOB_MANAGER_RPC_ADDRESS
           value: fl-service
+        volumeMounts:
+          - name: config
+            mountPath: /opt/flink/conf/flink-conf.yaml
+            subPath: flink-conf.yaml
+          - name: state
+            mountPath: /opt/flink/checkpoints
+            subPath: checkpoints
+          - name: state
+            mountPath: /opt/flink/savepoints
+            subPath: savepoints
+      volumes:
+        - name: config
+          configMap:
+            name: flink-config
+        - name: state
+          persistentVolumeClaim:
+            claimName: state-flink-jobmanager
