@@ -1,11 +1,9 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  annotations:
-    things: stuff
   name: logstash
 spec:
-  serviceName: ls-service
+  serviceName: ls-headless-service
   replicas: 2
   selector:
     matchLabels:
@@ -15,7 +13,6 @@ spec:
       labels:
         app: logstash
     spec:
-      terminationGracePeriodSeconds: 300
       initContainers:
       - name: fix-the-volume-permission
         image: busybox
@@ -30,7 +27,7 @@ spec:
           mountPath: /usr/share/logstash/data
       containers:
       - name: logstash
-        image: varnost/logstash:6.5.4
+        image: varnost/logstash:latest
         imagePullPolicy: Always
         args: ["--config.reload.automatic"]
         ports:

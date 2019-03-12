@@ -1,8 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ls-service
+  name: ls-headless-service
 spec:
+  clusterIP: None
   ports:
   - port: 9600
     name: http

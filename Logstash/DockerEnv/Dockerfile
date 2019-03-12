@@ -54,6 +54,9 @@ ENV LANG='en_US.UTF-8' LC_ALL='en_US.UTF-8'
 ADD bin/docker-entrypoint /usr/local/bin/
 RUN chmod 0755 /usr/local/bin/docker-entrypoint
 
+# Add plugins
+RUN /usr/share/logstash/bin/logstash-plugin install logstash-filter-uuid
+
 USER 1000
 
 COPY --from=golang_compiler /usr/local/src/env2yaml/env2yaml /usr/local/bin/
