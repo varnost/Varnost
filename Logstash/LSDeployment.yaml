@@ -4,7 +4,7 @@ metadata:
   name: logstash
 spec:
   serviceName: ls-headless-service
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: logstash
@@ -74,14 +74,26 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /usr/share/logstash/data
-        - name: pipeline
+        - name: ls-configs
           mountPath: /usr/share/logstash/pipeline
           subPath: logstash/pipeline
           readOnly: true
+        - name: ls-configs
+          mountPath: /usr/share/logstash/patterns
+          subPath: logstash/patterns
+          readOnly: true
+        - name: ssl-secret
+          mountPath: /etc/logstash-ssl
+          readOnly: true
       volumes:
-        - name: pipeline
-          persistentVolumeClaim:
-            claimName: nfs
+        - name: ssl-secret
+          secret:
+            secretName: logstash-ssl
+        - name: ls-configs
+          nfs:
+            server: "nf-service.default.svc.cluster.local"
+            path: "/"
+            readOnly: true
   volumeClaimTemplates:
   - metadata:
       name: data
