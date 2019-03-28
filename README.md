@@ -1,2 +1,2 @@
 # varnost-core
-It's not much yet, but this is the begining of a true, real-time, open source SIEM
+This is under very active development. Documentation will be soon to come, but for now the focus is on completing the core feature set to ready for deployment.
