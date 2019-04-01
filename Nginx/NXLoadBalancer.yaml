@@ -1,14 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ls-loadbalancer
+  name: nx-loadbalancer
 spec:
   selector:
-    app: logstash
+    app: nginx
   ports:
+  - name: kibana
+    port: 5601
+  - name: flink
+    port: 8081
   - name: beats
     port: 5044
   type: LoadBalancer
-                  # Replace this with your LB IP!
+  # REPLACE WITH YOUR IP
   loadBalancerIP: "xxx.xxx.xxx.xxx"
-                  # Replace this with your LB IP!

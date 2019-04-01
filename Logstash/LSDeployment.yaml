@@ -83,13 +83,13 @@ spec:
           mountPath: /usr/share/logstash/patterns
           subPath: logstash/patterns
           readOnly: true
-        - name: ssl-secret
+        - name: ls-ssl
           mountPath: /etc/logstash-ssl
           readOnly: true
       volumes:
-        - name: ssl-secret
+        - name: ls-ssl
           secret:
-            secretName: logstash-ssl
+            secretName: ls-ssl
         - name: ls-configs
           nfs:
             server: "nf-service.default.svc.cluster.local"

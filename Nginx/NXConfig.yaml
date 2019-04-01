@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  4;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+      worker_connections  1024;
+    }
+
+
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log  /var/log/nginx/access.log  main;
+
+      sendfile        on;
+      #tcp_nopush     on;
+
+      keepalive_timeout  65;
+
+      #gzip  on;
+
+      server {
+        listen       5601 ssl;
+        ssl_certificate     /etc/nginx-ssl/web.crt;
+        ssl_certificate_key /etc/nginx-ssl/web.key;
+        auth_basic "Restricted Content";
+        auth_basic_user_file "/etc/apache2/.htpasswd";
+        location / {
+          proxy_pass http://kb-service:5601;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Port $server_port;
+          proxy_cache_bypass $http_upgrade;
+        }
+      }
+      server {
+        listen       8081 ssl;
+        client_max_body_size 100M;
+        ssl_certificate     /etc/nginx-ssl/web.crt;
+        ssl_certificate_key /etc/nginx-ssl/web.key;
+        auth_basic "Restricted Content";
+        auth_basic_user_file "/etc/apache2/.htpasswd";
+        location / {
+          proxy_pass http://fl-service:8081;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Forwarded-Port $server_port;
+          proxy_cache_bypass $http_upgrade;
+        }
+      }
+      include /etc/nginx/conf.d/*.conf;
+    }
+    stream {
+      server {
+        listen 5044;
+        proxy_pass ls-service:5044;
+      }
+    }
