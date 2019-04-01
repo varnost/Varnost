@@ -5,6 +5,7 @@ metadata:
 spec:
   serviceName: ls-headless-service
   replicas: 1
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app: logstash
@@ -27,7 +28,7 @@ spec:
           mountPath: /usr/share/logstash/data
       containers:
       - name: logstash
-        image: varnost/logstash:latest
+        image: varnost/logstash:6.7.0
         imagePullPolicy: Always
         args: ["--config.reload.automatic"]
         ports:
