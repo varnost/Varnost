@@ -1,0 +1,25 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: alerting
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+     app: alerting
+  template:
+    metadata:
+      labels:
+        app: alerting
+    spec:
+      containers:
+      - name: alerting
+        image: varnost/alerting:latest
+        volumeMounts:
+        - name: sg-key
+          mountPath: /etc/sendgrid
+          readOnly: true
+      volumes:
+        - name: sg-key
+          secret:
+            secretName: sendgrid-key
