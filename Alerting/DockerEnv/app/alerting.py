@@ -74,7 +74,11 @@ class Manager():
     print(alert)
     print(type(alert))
     print("Sending Email")
-    self.alert_mail.SendMail(alert['name'], json.dumps(alert, indent=2))
+    try:
+      alert_name = alert['name']
+    except:
+      alert_name = "Unknown"
+    self.alert_mail.SendMail(alert_name, json.dumps(alert, indent=2))
 
 
 
