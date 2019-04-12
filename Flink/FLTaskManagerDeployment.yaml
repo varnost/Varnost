@@ -17,9 +17,23 @@ spec:
     spec:
       securityContext:
         fsGroup: 9999
+      initContainers:
+      - name: copy-configmap
+        image: busybox
+        command:
+        - sh
+        - -c
+        - cp /configmap/flink-conf.yaml /mutableconfig/flink-conf.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /configmap/flink-conf.yaml
+          subPath: flink-conf.yaml
+        - name: instance-config
+          mountPath: /mutableconfig
       containers:
       - name: flink-taskmanager
-        image: flink:1.7.1-scala_2.12
+        image: varnost/flink:1.7.2-scala_2.12
+        imagePullPolicy: Always
         args:
         - taskmanager
         ports:
@@ -29,23 +43,27 @@ spec:
           name: rpc
         - containerPort: 6125
           name: query
+        - containerPort: 50011
+          name: metrics
         volumeMounts:
-          - name: config
-            mountPath: /opt/flink/conf/flink-conf.yaml
-            subPath: flink-conf.yaml
-          - name: state
-            mountPath: /opt/flink/checkpoints
-            subPath: checkpoints
-          - name: state
-            mountPath: /opt/flink/savepoints
-            subPath: savepoints
+        - name: instance-config
+          mountPath: /opt/flink/conf/flink-conf.yaml
+          subPath: flink-conf.yaml
+        - name: data
+          mountPath: /opt/flink/checkpoints
+          subPath: checkpoints
+        - name: data
+          mountPath: /opt/flink/savepoints
+          subPath: savepoints
       volumes:
         - name: config
           configMap:
             name: flink-config
+        - name: instance-config
+          emptyDir: {}
   volumeClaimTemplates:
   - metadata:
-      name: state
+      name: data
     spec:
       accessModes:
         - ReadWriteOnce

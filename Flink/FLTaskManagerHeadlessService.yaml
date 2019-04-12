@@ -13,6 +13,8 @@ spec:
     port: 6125
   - name: ui
     port: 8081
+  - name: metrics
+    port: 50011
   selector:
     app: flink
     component: taskmanager

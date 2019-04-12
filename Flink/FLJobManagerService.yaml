@@ -12,6 +12,8 @@ spec:
     port: 6125
   - name: ui
     port: 8081
+  - name: interprocess
+    port: 50010
   selector:
     app: flink
     component: jobmanager

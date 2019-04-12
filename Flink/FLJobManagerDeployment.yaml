@@ -1,16 +1,13 @@
-# TODO: Look into the following link for final deployments
-# https://github.com/apache/flink/tree/release-1.7/flink-container/docker
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flink-jobmanager
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: flink
       component: jobmanager
-  strategy:
-    type: Recreate
   template:
     metadata:
       labels:
@@ -19,9 +16,23 @@ spec:
     spec:
       securityContext:
         fsGroup: 9999
+      initContainers:
+      - name: copy-configmap
+        image: busybox
+        command:
+        - sh
+        - -c
+        - cp /configmap/flink-conf.yaml /mutableconfig/flink-conf.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /configmap/flink-conf.yaml
+          subPath: flink-conf.yaml
+        - name: instance-config
+          mountPath: /mutableconfig
       containers:
       - name: flink-jobmanager
-        image: flink:1.7.1-scala_2.12
+        image: varnost/flink:1.7.2-scala_2.12
+        imagePullPolicy: Always
         args:
         - jobmanager
         ports:
@@ -33,23 +44,30 @@ spec:
           name: query
         - containerPort: 8081
           name: ui
-        env:
-        - name: JOB_MANAGER_RPC_ADDRESS
-          value: fl-service
+        - containerPort: 50010
+          name: interprocess
         volumeMounts:
-          - name: config
-            mountPath: /opt/flink/conf/flink-conf.yaml
-            subPath: flink-conf.yaml
-          - name: state
-            mountPath: /opt/flink/checkpoints
-            subPath: checkpoints
-          - name: state
-            mountPath: /opt/flink/savepoints
-            subPath: savepoints
-      volumes:
+        - name: instance-config
+          mountPath: /opt/flink/conf/flink-conf.yaml
+          subPath: flink-conf.yaml
         - name: config
-          configMap:
-            name: flink-config
-        - name: state
-          persistentVolumeClaim:
-            claimName: state-flink-jobmanager
+          mountPath: /opt/flink/conf/masters
+          subPath: masters
+        - name: data
+          mountPath: /opt/flink/checkpoints
+          subPath: checkpoints
+        - name: data
+          mountPath: /opt/flink/savepoints
+          subPath: savepoints
+        - name: data
+          mountPath: /opt/flink/ha-storage
+          subPath: ha-storage
+      volumes:
+      - name: config
+        configMap:
+          name: flink-config
+      - name: instance-config
+        emptyDir: {}
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-flink-jobmanager

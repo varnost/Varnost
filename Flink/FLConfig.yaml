@@ -76,7 +76,7 @@ data:
 
     # The high-availability mode. Possible options are 'NONE' or 'zookeeper'.
     #
-    # high-availability: zookeeper
+    high-availability: zookeeper
 
     # The path where metadata for master recovery is persisted. While ZooKeeper stores
     # the small ground truth for checkpoint and leader election, this location stores
@@ -85,13 +85,14 @@ data:
     # Must be a durable file system that is accessible from all nodes
     # (like HDFS, S3, Ceph, nfs, ...)
     #
-    # high-availability.storageDir: hdfs:///flink/ha/
+    high-availability.storageDir: file:///opt/flink/ha-storage
 
     # The list of ZooKeeper quorum peers that coordinate the high-availability
     # setup. This must be a list of the form:
     # "host1:clientPort,host2:clientPort,..." (default clientPort: 2181)
     #
-    # high-availability.zookeeper.quorum: localhost:2181
+    # Since K8s automatically load balances to an active node, using the service works fine
+    high-availability.zookeeper.quorum: zk-service:2181
 
 
     # ACL options are based on https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_BuiltinACLSchemes
@@ -99,6 +100,11 @@ data:
     # The default value is "open" and it can be changed to "creator" if ZK security is enabled
     #
     # high-availability.zookeeper.client.acl: open
+
+    # Other options recomended by https://ci.apache.org/projects/flink/flink-docs-release-1.7/ops/jobmanager_high_availability.html#config-file-flink-confyaml
+    high-availability.zookeeper.path.root: /flink
+    high-availability.cluster-id: /cluster_one
+    high-availability.jobmanager.port: 50010
 
     #==============================================================================
     # Fault tolerance and checkpointing
@@ -110,7 +116,7 @@ data:
     # Supported backends are 'jobmanager', 'filesystem', 'rocksdb', or the
     # <class-name-of-factory>.
     #
-    state.backend: filesystem
+    state.backend: rocksdb
 
     # Directory for checkpoints filesystem, when using any of the default bundled
     # state backends.
@@ -249,7 +255,14 @@ data:
     # Interval in milliseconds for refreshing the monitored directories.
     #historyserver.archive.fs.refresh-interval: 10000
 
+
+    # Additional Settings
+    metrics.internal.query-service.port: 50011
+
     # Other things that would be added by docker-entrypoint.sh
     # if I wasn't overwriting the file.
     blob.server.port: 6124
     query.server.port: 6125
+
+  masters: |
+    fl-service:8081
